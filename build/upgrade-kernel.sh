@@ -46,7 +46,7 @@ fi
 KERNEL="kernel7"
 
 GITHUBPROJECT="Circuit-Sword"
-GITHUBURL="https://github.com/Antho91/$GITHUBPROJECT"
+GITHUBURL="https://github.com/weese/$GITHUBPROJECT"
 PIHOMEDIR="$DEST/home/pi"
 BINDIR="$PIHOMEDIR/$GITHUBPROJECT"
 USER="pi"

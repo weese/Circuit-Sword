@@ -13,6 +13,7 @@ make bcm2709_defconfig
 # make menuconfig
 # Device Drivers -> Staging drivers -> Realtek RTL8723BS SDIO..
 sed -i 's/# CONFIG_RTL8723BS is not set/CONFIG_RTL8723BS=m/' .config
+patch -p1 -d sound/usb < ../Circuit-Sword/sound-module/snd-usb-audio-0.1/patches/fix-volume.patch
 
 make -j4 zImage modules dtbs
 
@@ -41,7 +42,7 @@ sudo kpartx -a -v -s $FILE
 
 sudo mount /dev/mapper/loop0p1 /mnt/fat32
 
-sudo cp mnt/fat32/$KERNEL.img /mnt/fat32/$KERNEL-backup.img
+sudo cp /mnt/fat32/$KERNEL.img /mnt/fat32/$KERNEL-backup.img
 sudo cp ../pi/$KERNEL.img /mnt/fat32/$KERNEL.img
 sudo cp ../pi/*.dtb /mnt/fat32/
 sudo cp ../pi/overlays/*.dtb* /mnt/fat32/overlays/

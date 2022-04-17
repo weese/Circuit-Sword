@@ -46,7 +46,7 @@ else
 fi
 
 GITHUBPROJECT="Circuit-Sword"
-GITHUBURL="https://github.com/Antho91/$GITHUBPROJECT"
+GITHUBURL="https://github.com/weese/$GITHUBPROJECT"
 PIHOMEDIR="$DEST/home/pi"
 BINDIR="$PIHOMEDIR/$GITHUBPROJECT"
 USER="pi"
@@ -207,6 +207,7 @@ execute "rm -f $DEST/etc/systemd/system/dhcpcd.service.d/wait.conf"
 execute "rm -f $DEST/etc/systemd/system/multi-user.target.wants/wifi-country.service"
 
 # Copy wifi firmware
+execute "mkdir -p $DEST/lib/firmware/rtlwifi/"
 execute "cp $BINDIR/wifi-firmware/rtl* $DEST/lib/firmware/rtlwifi/"
 
 # Copy bluetooth firmware
@@ -237,32 +238,32 @@ fi
 # Remove the old service
 execute "rm -f $DEST/etc/systemd/system/cs-osd.service"
 execute "rm -f $DEST/etc/systemd/system/multi-user.target.wants/cs-osd.service"
-execute "rm -f $DEST/lib/systemd/system/cs-osd.service"
+execute "rm -f $DEST/usr/lib/systemd/system/cs-osd.service"
 
 # Prepare for service install
 execute "rm -f $DEST/etc/systemd/system/cs-hud.service"
 execute "rm -f $DEST/etc/systemd/system/multi-user.target.wants/cs-hud.service"
-execute "rm -f $DEST/lib/systemd/system/cs-hud.service"
+execute "rm -f $DEST/usr/lib/systemd/system/cs-hud.service"
 
-execute "rm -f $DEST/lib/systemd/system/dpi-cloner.service"
+execute "rm -f $DEST/usr/lib/systemd/system/dpi-cloner.service"
 
 # Install HUD service
-execute "cp $BINDIR/cs-hud/cs-hud.service $DEST/lib/systemd/system/cs-hud.service"
+execute "cp $BINDIR/cs-hud/cs-hud.service $DEST/usr/lib/systemd/system/cs-hud.service"
 
 # Install RTL Bluetooth service
 execute "cp $BINDIR/bt-driver/rtl-bluetooth.service $DEST/lib/systemd/system/rtl-bluetooth.service"
 execute "cp $BINDIR/bt-driver/rtk_hciattach $DEST/usr/bin/rtk_hciattach"
 
 #execute "systemctl enable cs-hud.service"
-execute "ln -s $DEST/lib/systemd/system/cs-hud.service $DEST/etc/systemd/system/cs-hud.service"
-execute "ln -s $DEST/lib/systemd/system/cs-hud.service $DEST/etc/systemd/system/multi-user.target.wants/cs-hud.service"
+execute "ln -s $DEST/usr/lib/systemd/system/cs-hud.service $DEST/etc/systemd/system/cs-hud.service"
+execute "ln -s $DEST/usr/lib/systemd/system/cs-hud.service $DEST/etc/systemd/system/multi-user.target.wants/cs-hud.service"
 
 #execute "systemctl enable rtl-bluetooth.service"
 execute "ln -s $DEST/lib/systemd/system/rtl-bluetooth.service $DEST/etc/systemd/system/rtl-bluetooth.service"
 execute "ln -s $DEST/lib/systemd/system/rtl-bluetooth.service $DEST/etc/systemd/system/multi-user.target.wants/rtl-bluetooth.service"
 
 # Install DPI-CLONER service
-execute "cp $BINDIR/dpi-cloner/dpi-cloner.service $DEST/lib/systemd/system/dpi-cloner.service"
+execute "cp $BINDIR/dpi-cloner/dpi-cloner.service $DEST/usr/lib/systemd/system/dpi-cloner.service"
 
 if [[ $DEST == "" ]] ; then
   execute "systemctl daemon-reload"
