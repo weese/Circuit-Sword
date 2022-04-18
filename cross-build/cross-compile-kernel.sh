@@ -1,4 +1,6 @@
-# Install docker and increase resources to e.g. 8 CPUs
+# Install Docker for Mac
+#  - increase resources to e.g. 8 CPUs
+#  - enable Experimental Features -> Enable VirtuoFS accelerated directory sharing
 # Download folder https://github.com/geerlingguy/raspberry-pi-pcie-devices/tree/master/extras/cross-compile
 
 # docker-compose up -d
