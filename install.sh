@@ -49,7 +49,8 @@ GITHUBPROJECT="Circuit-Sword"
 GITHUBURL="https://github.com/weese/$GITHUBPROJECT"
 PIHOMEDIR="$DEST/home/pi"
 BINDIR="$PIHOMEDIR/$GITHUBPROJECT"
-USER="pi"
+# USER="pi"
+USER=1000
 
 if [[ $2 != "" ]] ; then
   BRANCH=$2

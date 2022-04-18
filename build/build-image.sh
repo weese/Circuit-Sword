@@ -128,11 +128,12 @@ fi
 execute "cp $IMG $OUTFILE"
 
 # Find partions using kpartx
-execute "kpartx -a -v -s $OUTFILE" 
+execute "kpartx -a -v -s $OUTFILE"
+execute "LOOP_DEV=$(losetup --list | grep "$OUTFILE" | cut -d ' ' -f1 | cut -d '/' -f3)"
 
 # Mount partitions
-execute "sudo mount /dev/mapper/loop0p1 $MOUNTFAT32"
-execute "sudo mount /dev/mapper/loop0p2 $MOUNTEXT4"
+execute "sudo mount /dev/mapper/${LOOP_DEV}p1 $MOUNTFAT32"
+execute "sudo mount /dev/mapper/${LOOP_DEV}p2 $MOUNTEXT4"
 
 # Install
 execute "../install.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4"
