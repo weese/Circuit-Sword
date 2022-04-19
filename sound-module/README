@@ -1,13 +1,13 @@
 Do you want to update the kernel without issues
 # Run first
 sudo apt-get update
-sudo apt install raspberrypi-kernel-headers
-sudo apt-get install subversion
+sudo apt install raspberrypi-kernel-headers subversion wget
 
 After that you are able to install (the preferred mehod) .deb file
 
 
 # DEB package install (the preferred method)
+wget https://github.com/weese/Circuit-Sword/raw/master/sound-module/snd-usb-audio-dkms_0.1_armhf.deb
 sudo dpkg -i snd-usb-audio-dkms_0.1_armhf.deb
 
 # DKMS manual install
@@ -19,6 +19,6 @@ sudo dkms install -m snd-usb-audio/0.1
 # DKMS manual uninstall
 sudo dkms remove -m snd-usb-audio/0.1 --all
 
-# Last resort help, if dkms doesn't work
+# Last resort help, if DKMS doesn't work
 ./fix-for-installed-kernel.sh
 it will try to install the correct module before reboot

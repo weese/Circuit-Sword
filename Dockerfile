@@ -21,10 +21,19 @@ WORKDIR /build
 CMD ["bash"]
 
 
-# FROM base AS build-kernel
+FROM base AS build-kernel
 
-# COPY cross-compile-kernel.sh .
-# RUN ./cross-compile-kernel.sh
+VOLUME /build/images
+
+COPY sound-module/snd-usb-audio-0.1/patches/fix-volume.patch .
+RUN git clone --depth=1 https://github.com/raspberrypi/linux --branch stable
+RUN patch -p1 -d linux/sound/usb < fix-volume.patch
+
+COPY cross-build/build-kernel.sh .
+COPY cross-build/cross-compile-kernel.sh .
+
+CMD ["bash"]
+
 
 FROM base AS build-image
 
@@ -34,5 +43,3 @@ COPY build/build-image.sh .
 COPY install.sh /
 
 CMD ["bash"]
-
-RUN 

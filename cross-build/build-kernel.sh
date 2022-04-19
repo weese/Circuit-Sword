@@ -1,32 +1,12 @@
 #!/bin/bash
 
-# 
-# This file originates from Kite's Circuit Sword control board project.
-# Author: Kite (Giles Burgess)
-# 
-# THIS HEADER MUST REMAIN WITH THIS FILE AT ALL TIMES
-#
-# This firmware is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This firmware is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this repo. If not, see <http://www.gnu.org/licenses/>.
-#
-
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root (sudo)"
   exit 1
 fi
 
-if [ $# != 2 ] && [ $# != 3 ] ; then
-  echo "Usage: ./<cmd> YES <image.img> [branch]"
+if [ $# != 2 ] ; then
+  echo "Usage: ./<cmd> YES <image.img>"
   exit 1
 fi
 
@@ -36,19 +16,6 @@ fi
 if [[ $2 != "" ]] ; then
   IMG=$2
 fi
-
-if [[ $3 != "" ]] ; then
-  BRANCH=$3
-else
-  BRANCH="master"
-fi
-
-BUILD="CSO_CM3_"$(date +"%Y%m%d-%H%M%S")
-GITHUBPROJECT="Circuit-Sword"
-GITHUBURL="https://github.com/weese/$GITHUBPROJECT"
-PIHOMEDIR="/home/pi"
-BINDIR="$PIHOMEDIR/$GITHUBPROJECT"
-USER="pi"
 
 MOUNTFAT32="/mnt/fat32"
 MOUNTEXT4="/mnt/ext4"
@@ -101,8 +68,7 @@ if ! exists $IMG ; then
   exit 1
 fi
 
-OUTFILE=$(basename $IMG .img)"_$BUILD.img"
-ZIPFILE=$(basename $IMG .img)"_$BUILD.zip"
+OUTFILE=$(basename $IMG .img)"_kernel.img"
 
 # Sanity check OUTFILE
 if exists $OUTFILE ; then
@@ -136,12 +102,8 @@ execute "kpartx -a -v -s $OUTFILE"
 execute "sudo mount /dev/mapper/loop0p1 $MOUNTFAT32"
 execute "sudo mount /dev/mapper/loop0p2 $MOUNTEXT4"
 
-# Install
-execute "../install.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4"
-
-# Patch for PLUS 
-# Not needed for Debian buster
-# execute "unzip -o -d $MOUNTFAT32 $MOUNTEXT4$BINDIR/settings/pi_plus_20190130.zip"
+# Compile
+execute "./cross-compile-kernel.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4"
 
 # Unmount partitions
 execute "umount $MOUNTFAT32"

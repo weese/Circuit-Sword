@@ -1,3 +1,59 @@
+#!/bin/bash
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root (sudo)"
+  exit 1
+fi
+
+if [ $# != 3 ] ; then
+  echo "Usage: ./<cmd> YES [fat32 root] [ext4 root]"
+  exit 1
+fi
+
+#####################################################################
+# Vars
+
+if [[ $2 != "" ]] ; then
+  DESTBOOT=$2
+else
+  DESTBOOT="/boot"
+fi
+
+if [[ $3 != "" ]] ; then
+  DEST=$3
+  MAKE_FLAGS="-j8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-"
+else
+  DEST=""
+  MAKE_FLAGS="-j4"
+fi
+
+KERNEL=kernel7
+
+#####################################################################
+# Functions
+execute() { #STRING
+  if [ $# != 1 ] ; then
+    echo "ERROR: No args passed"
+    exit 1
+  fi
+  cmd=$1
+  
+  echo "[*] EXECUTE: [$cmd]"
+  eval "$cmd"
+  ret=$?
+  
+  if [ $ret != 0 ] ; then
+    echo "ERROR: Command exited with [$ret]"
+    exit 1
+  fi
+  
+  return 0
+}
+
+#####################################################################
+# LOGIC!
+echo "COMPILING.."
+
 # Install Docker for Mac
 #  - increase resources to e.g. 8 CPUs
 #  - enable Experimental Features -> Enable VirtuoFS accelerated directory sharing
@@ -8,63 +64,43 @@
 
 # Inside the container run:
 
-git clone --depth=1 https://github.com/raspberrypi/linux --branch rpi-5.10.y
-cd linux
-patch -p1 -d sound/usb < ../sound-module/snd-usb-audio-0.1/patches/fix-volume.patch
+#git clone --depth=1 https://github.com/raspberrypi/linux --branch rpi-5.10.y
+#patch -p1 -d linux/sound/usb < ../sound-module/snd-usb-audio-0.1/patches/fix-volume.patch
+
+execute "cd linux"
 
 # Use default conf with RTL8723BS enabled
-make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- bcm2709_defconfig
-sed -i 's/# CONFIG_RTL8723BS is not set/CONFIG_RTL8723BS=m/' .config
+execute "make $MAKE_FLAGS bcm2709_defconfig"
+execute "sed -i 's/# CONFIG_RTL8723BS is not set/CONFIG_RTL8723BS=m/' .config"
 
-# (Optionally) Either edit the .config file by hand or use menuconfig:
-# make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
+# (Optionally) Either edit the .config IMG by hand or use menuconfig:
+# make $MAKE_FLAGS menuconfig
 
-# Compile kernel and wait 10min
-make -j8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage modules dtbs
+# (Cross-)compile kernel
+execute "make $MAKE_FLAGS zImage modules dtbs"
 
-mkdir ../modules
-make INSTALL_MOD_PATH=../modules/ modules_install
+execute "mkdir ../modules"
+execute "make INSTALL_MOD_PATH=../modules/ modules_install"
 
-rm -f ../modules/lib/modules/*/build
-rm -f ../modules/lib/modules/*/source
+execute "rm -f ../modules/lib/modules/*/build"
+execute "rm -f ../modules/lib/modules/*/source"
 
-mkdir ../pi
-mkdir ../pi/overlays
+execute "mkdir ../pi"
+execute "mkdir ../pi/overlays"
 
-KERNEL=kernel7
+execute "cp arch/arm/boot/dts/*.dtb ../pi/"
+execute "cp arch/arm/boot/dts/overlays/*.dtb* ../pi/overlays/"
+execute "cp arch/arm/boot/dts/overlays/README ../pi/overlays/"
+execute "cp arch/arm/boot/zImage ../pi/$KERNEL.img"
 
-cp arch/arm/boot/dts/*.dtb ../pi/
-cp arch/arm/boot/dts/overlays/*.dtb* ../pi/overlays/
-cp arch/arm/boot/dts/overlays/README ../pi/overlays/
-cp arch/arm/boot/zImage ../pi/$KERNEL.img
+execute "cp $DESTBOOT/$KERNEL.img $DESTBOOT/$KERNEL-backup.img"
+execute "cp ../pi/$KERNEL.img $DESTBOOT/$KERNEL.img"
+execute "cp ../pi/*.dtb $DESTBOOT/"
+execute "cp ../pi/overlays/*.dtb* $DESTBOOT/overlays/"
+execute "cp ../pi/overlays/README $DESTBOOT/overlays/"
 
-mkdir -p /mnt/fat32
-mkdir -p /mnt/ext4
+execute "rsync -avh ../modules/ $DEST/"
 
-FILE=retropie-buster-4.8-rpi2_3_zero2w.img
-BASE_IMAGE=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/$FILE.gz
-# wget $BASE_IMAGE
-# gunzip $FILE.gz
-
-kpartx -a -v -s $FILE
-
-mount /dev/mapper/loop0p1 /mnt/fat32
-
-cp /mnt/fat32/$KERNEL.img /mnt/fat32/$KERNEL-backup.img
-cp ../pi/$KERNEL.img /mnt/fat32/$KERNEL.img
-cp ../pi/*.dtb /mnt/fat32/
-cp ../pi/overlays/*.dtb* /mnt/fat32/overlays/
-cp ../pi/overlays/README /mnt/fat32/overlays/
-
-umount /mnt/fat32
-
-mount /dev/mapper/loop0p2 /mnt/ext4
-
-rsync -avh ../modules/ /mnt/ext4/
-
-umount /mnt/ext4
-
-kpartx -d -v $FILE
-
-# copy image out of container
-# docker cp <container_id>:build/linux/retropie-buster-4.8-rpi2_3_zero2w.img .
+#####################################################################
+# DONE
+echo "DONE!"

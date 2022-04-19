@@ -25,7 +25,7 @@ if [ "$EUID" -ne 0 ]
   exit 1
 fi
 
-if [ $# == 0 ] || [ $# == 3 ] ; then
+if [ $# != 3 ] ; then
   echo "Usage: ./<cmd> YES [branch] [fat32 root] [ext4 root]"
   exit 1
 fi
@@ -225,7 +225,7 @@ execute "dpkg -x $BINDIR/settings/python-serial_2.6-1.1_all.deb $DEST/"
 execute "dpkg -x $BINDIR/settings/rfkill_0.5-1_armhf.deb $DEST/"
 
 # Install avrdude
-execute "dpkg -x $BINDIR/settings/avrdude_6.3-20171130+svn1429-2_armhf $DEST/"
+# execute "dpkg -x $BINDIR/settings/avrdude_6.3-20171130+svn1429-2_armhf.deb $DEST/"
 execute "dpkg -x $BINDIR/settings/libftdi1_0.20-4_armhf.deb $DEST/"
 
 # Install wiringPi
