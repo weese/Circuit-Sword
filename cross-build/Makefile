@@ -1,11 +1,12 @@
-IMG=retropie-buster-4.8-rpi2_3_zero2w
-IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/${IMG}.img.gz
-KERNEL=stable
+# Latest (not working)
+# IMG=retropie-buster-4.8-rpi2_3_zero2w
+# IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/${IMG}.img.gz
+# KERNEL=stable
 
 # Anthology's distro
-# IMG=retropie-4.5.1-rpi2_rpi3
-# IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.5.1/${IMG}.img.gz
-# KERNEL=rpi-4.14.y
+IMG=retropie-buster-4.7.1-rpi2_3
+IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.7.1/${IMG}.img.gz
+KERNEL=stable
 
 all: build-image
 
