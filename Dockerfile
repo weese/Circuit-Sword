@@ -21,12 +21,13 @@ WORKDIR /build
 CMD ["bash"]
 
 
+# Cross compile kernel
 FROM base AS build-kernel
-
+ARG BRANCH
 VOLUME /build/images
 
 COPY sound-module/snd-usb-audio-0.1/patches/fix-volume.patch .
-RUN git clone --depth=1 https://github.com/raspberrypi/linux --branch stable
+RUN git clone --depth=1 https://github.com/raspberrypi/linux --branch ${BRANCH}
 RUN patch -p1 -d linux/sound/usb < fix-volume.patch
 
 COPY cross-build/build-kernel.sh .
@@ -35,8 +36,8 @@ COPY cross-build/cross-compile-kernel.sh .
 CMD ["bash"]
 
 
+# Extend image for CSO CM3
 FROM base AS build-image
-
 VOLUME /build/images
 
 COPY build/build-image.sh .
