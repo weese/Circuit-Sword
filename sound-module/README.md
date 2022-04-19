@@ -1,9 +1,9 @@
 # Fix the too-loud-volume issue on Raspbian Buster and later
 
-## Option 1 (Preferred): DEB package install
+## Option 1 (preferred): DEB package install
 ```
 sudo apt-get update
-sudo apt-get install raspberrypi-kernel-headers subversion wget
+sudo apt-get install raspberrypi-kernel-headers subversion wget unzip
 wget https://github.com/weese/Circuit-Sword/raw/master/sound-module/snd-usb-audio-dkms_0.1_armhf.deb
 sudo dpkg -i snd-usb-audio-dkms_0.1_armhf.deb
 ```
