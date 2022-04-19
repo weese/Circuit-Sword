@@ -25,7 +25,7 @@ if [ "$EUID" -ne 0 ]
   exit 1
 fi
 
-if [ $# != 3 ] ; then
+if [ $# lt 1 ] || [ $# gt 4 ]; then
   echo "Usage: ./<cmd> YES [branch] [fat32 root] [ext4 root]"
   exit 1
 fi
