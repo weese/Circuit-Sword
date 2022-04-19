@@ -1,4 +1,4 @@
-# Cross-build a new SD image
+# Cross-build a new SD image in 6min
 
 You can build your own SD image of Retropie for the Circuit Sword on your local machine (tested on Mac OS) using Docker.
 After installing Docker, you should tune it a bit to speed up the build process:

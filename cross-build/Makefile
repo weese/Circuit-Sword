@@ -1,5 +1,11 @@
 IMG=retropie-buster-4.8-rpi2_3_zero2w
 IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/${IMG}.img.gz
+KERNEL=stable
+
+# Anthology's distro
+# IMG=retropie-4.5.1-rpi2_rpi3
+# IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.5.1/${IMG}.img.gz
+# KERNEL=rpi-4.14.y
 
 all: build-image
 
@@ -12,9 +18,9 @@ docker-build db: docker-build-kernel docker-build-image
 docker-build-kernel:
 	DOCKER_BUILDKIT=1 \
 		docker build \
-		--build-arg BRANCH=stable \
+		--build-arg BRANCH=${KERNEL} \
 		--target build-kernel \
-		-t build-kernel \
+		-t build-kernel-${KERNEL} \
 		..
 
 .PHONY: docker-build-image
@@ -26,7 +32,8 @@ docker-build-image:
 		..
 
 images/${IMG}.img:
-	wget ${IMG_URL}
+	cd images; \
+	wget ${IMG_URL}; \
 	gunzip ${IMG}.img.gz
 
 .PHONY: build-kernel bk
