@@ -27,8 +27,6 @@ else
   MAKE_FLAGS="-j4"
 fi
 
-KERNEL=kernel7
-
 #####################################################################
 # Functions
 execute() { #STRING
@@ -70,8 +68,18 @@ echo "COMPILING.."
 execute "cd linux"
 
 # Use default conf with RTL8723BS enabled
+execute "KERNEL=kernel7"
 execute "make $MAKE_FLAGS bcm2709_defconfig"
 execute "sed -i 's/# CONFIG_RTL8723BS is not set/CONFIG_RTL8723BS=m/' .config"
+
+# fixes for Retropie 4.8, kernel 5.10.103 (stable)
+execute "sed -i 's/CONFIG_KEYBOARD_TCA6416=m/# CONFIG_KEYBOARD_TCA6416 is not set/' .config"
+execute "sed -i 's/CONFIG_KEYBOARD_TCA8418=m/# CONFIG_KEYBOARD_TCA8418 is not set/' .config"
+execute "sed -i 's/CONFIG_LEDS_PWM=y/# CONFIG_LEDS_PWM is not set/' .config"
+execute "sed -i 's/CONFIG_LEDS_TRIGGER_PATTERN=m/# CONFIG_LEDS_TRIGGER_PATTERN is not set/' .config"
+execute "sed -i 's/CONFIG_F2FS_FS_SECURITY=y/# CONFIG_F2FS_FS_SECURITY is not set/' .config"
+
+execute "cp .config /build/images/config"
 
 # (Optionally) Either edit the .config IMG by hand or use menuconfig:
 # make $MAKE_FLAGS menuconfig
@@ -84,22 +92,14 @@ execute "make INSTALL_MOD_PATH=../modules/ modules_install"
 
 execute "rm -f ../modules/lib/modules/*/build"
 execute "rm -f ../modules/lib/modules/*/source"
-
-execute "mkdir ../pi"
-execute "mkdir ../pi/overlays"
-
-execute "cp arch/arm/boot/dts/*.dtb ../pi/"
-execute "cp arch/arm/boot/dts/overlays/*.dtb* ../pi/overlays/"
-execute "cp arch/arm/boot/dts/overlays/README ../pi/overlays/"
-execute "cp arch/arm/boot/zImage ../pi/$KERNEL.img"
+execute "rsync -avh --delete ../modules/lib/modules/* $DEST/lib/modules/"
 
 execute "cp $DESTBOOT/$KERNEL.img $DESTBOOT/$KERNEL-backup.img"
-execute "cp ../pi/$KERNEL.img $DESTBOOT/$KERNEL.img"
-execute "cp ../pi/*.dtb $DESTBOOT/"
-execute "cp ../pi/overlays/*.dtb* $DESTBOOT/overlays/"
-execute "cp ../pi/overlays/README $DESTBOOT/overlays/"
-
-execute "rsync -avh ../modules/ $DEST/"
+execute "cp arch/arm/boot/dts/*.dtb $DESTBOOT/"
+execute "rm $DESTBOOT/overlays/*"
+execute "cp arch/arm/boot/dts/overlays/*.dtb* $DESTBOOT/overlays/"
+execute "cp arch/arm/boot/dts/overlays/README $DESTBOOT/overlays/"
+execute "cp arch/arm/boot/zImage $DESTBOOT/$KERNEL.img"
 
 #####################################################################
 # DONE

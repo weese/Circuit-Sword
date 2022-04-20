@@ -1,12 +1,13 @@
 # Latest (not working)
-# IMG=retropie-buster-4.8-rpi2_3_zero2w
-# IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/${IMG}.img.gz
+IMG=retropie-buster-4.8-rpi2_3_zero2w
+IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/${IMG}.img.gz
 # KERNEL=stable
+KERNEL=rpi-5.15.y
 
 # Anthology's distro
-IMG=retropie-buster-4.7.1-rpi2_3
-IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.7.1/${IMG}.img.gz
-KERNEL=stable
+# IMG=retropie-buster-4.7.1-rpi2_3
+# IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.7.1/${IMG}.img.gz
+# KERNEL=stable
 
 all: build-image
 
@@ -44,7 +45,7 @@ build-kernel bk images/${IMG}_${KERNEL}.img: images/${IMG}.img
 		--name build-kernel \
 		--volume ${PWD}/images:/build/images \
 		--privileged \
-		build-kernel \
+		build-kernel-${KERNEL} \
 		/bin/bash -c "./build-kernel.sh YES images/${IMG}.img && mv ${IMG}_kernel.img images/${IMG}_${KERNEL}.img"
 
 .PHONY: build-image bi
