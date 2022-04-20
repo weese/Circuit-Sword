@@ -20,4 +20,4 @@ make all
 ```
 
 The final image will be written into the folder `cross-build/images` and is has a filename that includes a recent UTC date
-`retropie-buster-4.8-rpi2_3_zero2w_kernel_CSO_CM3_2022xxxx-xxxxxx.img`. Simply burn that to a microSD card using [balenaEtcher](https://www.balena.io/etcher/).
+`retropie-buster-4.8-rpi2_3_zero2w_stable_CSO_CM3_2022xxxx-xxxxxx.img`. Simply burn that to a microSD card using [balenaEtcher](https://www.balena.io/etcher/).
