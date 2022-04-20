@@ -38,19 +38,19 @@ images/${IMG}.img:
 	gunzip ${IMG}.img.gz
 
 .PHONY: build-kernel bk
-build-kernel bk images/${IMG}_kernel.img: images/${IMG}.img
+build-kernel bk images/${IMG}_${KERNEL}.img: images/${IMG}.img
 	docker run --rm \
 		--name build-kernel \
 		--volume ${PWD}/images:/build/images \
 		--privileged \
 		build-kernel \
-		/bin/bash -c "./build-kernel.sh YES images/${IMG}.img && mv ${IMG}_kernel.img images/"
+		/bin/bash -c "./build-kernel.sh YES images/${IMG}.img && mv ${IMG}_kernel.img images/${IMG}_${KERNEL}.img"
 
 .PHONY: build-image bi
-build-image bi: images/${IMG}_kernel.img
+build-image bi: images/${IMG}_${KERNEL}.img
 	docker run --rm \
 		--name build-image \
 		--volume ${PWD}/images:/build/images \
 		--privileged \
 		build-image \
-		/bin/bash -c "./build-image.sh YES images/${IMG}_kernel.img && mv ${IMG}_* images/"
+		/bin/bash -c "./build-image.sh YES images/${IMG}_${KERNEL}.img && mv ${IMG}_* images/"
