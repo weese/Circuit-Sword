@@ -225,9 +225,16 @@ execute "dpkg -x $BINDIR/settings/python-serial_2.6-1.1_all.deb $DEST/"
 execute "dpkg -x $BINDIR/settings/rfkill_0.5-1_armhf.deb $DEST/"
 
 # Install avrdude
-execute "dpkg -x $BINDIR/settings/libftdi1_0.20-4_armhf.deb $DEST/"
-execute "dpkg -x $BINDIR/settings/libhidapi-libusb0_0.8.0~rc1+git20140818.d17db57+dfsg-2_armhf.deb $DEST/"
-execute "dpkg -x $BINDIR/settings/avrdude_6.3+r1425-1+rpt1_armhf.deb $DEST/"
+# !! The following will work only with hosts that are ARM based, e.g. Macbook M1 or RaspberryPi
+# Avrdude or something connected is causing kernel panics with the latest RetroPie 4.8 if not installed but only extracted :/
+execute "chroot $DEST sudo dpkg -i /home/pi/$GITHUBPROJECT/settings/libftdi1_0.20-4_armhf.deb"
+execute "chroot $DEST sudo dpkg -i /home/pi/$GITHUBPROJECT/settings/libhidapi-libusb0_0.8.0~rc1+git20140818.d17db57+dfsg-2_armhf.deb"
+execute "chroot $DEST sudo dpkg -i /home/pi/$GITHUBPROJECT/settings/avrdude_6.3-20171130+svn1429-2+rpt1_armhf.deb"
+
+# This causes panics at the first boot or if extracted later causes standard executable to be no longer found, e.g. ls
+# execute "dpkg -x $BINDIR/settings/libftdi1_0.20-4_armhf.deb $DEST/"
+# execute "dpkg -x $BINDIR/settings/libhidapi-libusb0_0.8.0~rc1+git20140818.d17db57+dfsg-2_armhf.deb $DEST/"
+# execute "dpkg -x $BINDIR/settings/avrdude_6.3+r1425-1+rpt1_armhf.deb $DEST/"
 
 # Install wiringPi
 execute "dpkg -x $BINDIR/settings/wiringpi_2.46_armhf.deb $DEST/"

@@ -79,8 +79,6 @@ execute "sed -i 's/CONFIG_LEDS_PWM=y/# CONFIG_LEDS_PWM is not set/' .config"
 execute "sed -i 's/CONFIG_LEDS_TRIGGER_PATTERN=m/# CONFIG_LEDS_TRIGGER_PATTERN is not set/' .config"
 execute "sed -i 's/CONFIG_F2FS_FS_SECURITY=y/# CONFIG_F2FS_FS_SECURITY is not set/' .config"
 
-execute "cp .config /build/images/config"
-
 # (Optionally) Either edit the .config IMG by hand or use menuconfig:
 # make $MAKE_FLAGS menuconfig
 
