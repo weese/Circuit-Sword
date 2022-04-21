@@ -7,7 +7,7 @@ RUN apt-get clean && apt-get update && \
     git bc sshfs bison flex libssl-dev python3 make kmod libc6-dev libncurses5-dev \
     crossbuild-essential-armhf \
     crossbuild-essential-arm64 \
-    vim wget kpartx rsync sudo
+    vim wget kpartx rsync sudo util-linux cloud-guest-utils
 
 RUN mkdir -p /root/.ssh
 RUN chmod 644 /root/.ssh
