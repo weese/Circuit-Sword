@@ -79,6 +79,24 @@ execute() { #STRING
   return 0
 }
 
+install() { #STRING
+  if [ $# != 1 ] ; then
+    echo "ERROR: No args passed"
+    exit 1
+  fi
+
+  if [[ $DEST != "" ]] ; then
+    # We cannot simply extract as in the following command, because avrdude or something connected
+    # causes kernel panics with the latest RetroPie 4.8
+    # execute "dpkg -x $BINDIR/$1 $DEST/"
+    #
+    # Instead we install in a chroot which only works on ARM based hosts, e.g. Macbook M1 or RaspberryPi
+    execute "chroot $DEST sudo dpkg -i /home/pi/$GITHUBPROJECT/$1"
+  else
+    execute "sudo dpkg -i $BINDIR/$1"
+  fi
+}
+
 exists() { #FILE
   if [ $# != 1 ] ; then
     echo "ERROR: No args passed"
@@ -112,8 +130,7 @@ execute "chown -R $USER:$USER $BINDIR"
 # Config.txt bits
 if ! exists "$DESTBOOT/config_ORIGINAL.txt" ; then
   execute "cp $DESTBOOT/config.txt $DESTBOOT/config_ORIGINAL.txt"
-  execute "cp $BINDIR/settings/config.txt $DESTBOOT/config.txt"
-  execute "cp $BINDIR/settings/config-cs.txt $DESTBOOT/config-cs.txt"
+  execute "cp $BINDIR/boot/* $DESTBOOT/"
 fi
 
 # Special case where config.txt has been updated on upgrade
@@ -222,25 +239,30 @@ execute "sed -i 's/console=serial0,115200//' $DESTBOOT/cmdline.txt"
 execute "sed -i \"s/dev-serial1.device/dev-ttyAMA0.device/\" $DEST/lib/systemd/system/hciuart.service"
 
 # Install python-serial
-execute "dpkg -x $BINDIR/settings/python-serial_2.6-1.1_all.deb $DEST/"
+install "settings/deb/python-serial_2.6-1.1_all.deb"
 
 # Install rfkill
-execute "dpkg -x $BINDIR/settings/rfkill_0.5-1_armhf.deb $DEST/"
+install "settings/deb/rfkill_0.5-1_armhf.deb"
 
 # Install avrdude
 # !! The following will work only with hosts that are ARM based, e.g. Macbook M1 or RaspberryPi
 # Avrdude or something connected is causing kernel panics with the latest RetroPie 4.8 if not installed but only extracted :/
-execute "chroot $DEST sudo dpkg -i /home/pi/$GITHUBPROJECT/settings/libftdi1_0.20-4_armhf.deb"
-execute "chroot $DEST sudo dpkg -i /home/pi/$GITHUBPROJECT/settings/libhidapi-libusb0_0.8.0~rc1+git20140818.d17db57+dfsg-2_armhf.deb"
-execute "chroot $DEST sudo dpkg -i /home/pi/$GITHUBPROJECT/settings/avrdude_6.3-20171130+svn1429-2+rpt1_armhf.deb"
+install "settings/deb/libftdi1_0.20-4_armhf.deb"
+install "settings/deb/libhidapi-libusb0_0.8.0~rc1+git20140818.d17db57+dfsg-2_armhf.deb"
+install "settings/deb/avrdude_6.3-20171130+svn1429-2+rpt1_armhf.deb"
 
-# This causes panics at the first boot or if extracted later causes standard executable to be no longer found, e.g. ls
-# execute "dpkg -x $BINDIR/settings/libftdi1_0.20-4_armhf.deb $DEST/"
-# execute "dpkg -x $BINDIR/settings/libhidapi-libusb0_0.8.0~rc1+git20140818.d17db57+dfsg-2_armhf.deb $DEST/"
-# execute "dpkg -x $BINDIR/settings/avrdude_6.3+r1425-1+rpt1_armhf.deb $DEST/"
+# Install DKMS modules
+install "settings/deb/libapr1_1.6.5-1_armhf.deb"
+install "settings/deb/libaprutil1_1.6.1-4_armhf.deb"
+install "settings/deb/libserf-1-1_1.3.9-7_armhf.deb"
+install "settings/deb/libsvn1_1.10.4-1+deb10u3_armhf.deb"
+install "settings/deb/libutf8proc2_2.3.0-1_armhf.deb"
+install "settings/deb/subversion_1.10.4-1+deb10u3_armhf.deb"
+install "sound-module/snd-usb-audio-dkms_0.1_armhf.deb"
+install "wifi-module/rtl8723bs-dkms_4.14_all.deb"
 
 # Install wiringPi
-execute "dpkg -x $BINDIR/settings/wiringpi_2.46_armhf.deb $DEST/"
+install "settings/deb/wiringpi_2.46_armhf.deb"
 
 # Enable /ramdisk as a tmpfs (ramdisk)
 if [[ $(grep '/ramdisk' $DEST/etc/fstab) == "" ]] ; then
