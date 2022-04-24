@@ -1,30 +1,11 @@
 #!/bin/bash
 
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as root (sudo)"
-  exit 1
-fi
+set -e
 
-if [ $# != 3 ] ; then
-  echo "Usage: ./<cmd> YES [fat32 root] [ext4 root]"
-  exit 1
-fi
-
-#####################################################################
-# Vars
-
-if [[ $2 != "" ]] ; then
-  DESTBOOT=$2
+if [[ $1 != "" ]] ; then
+  MAKE_FLAGS="$@"
 else
-  DESTBOOT="/boot"
-fi
-
-if [[ $3 != "" ]] ; then
-  DEST=$3
-  MAKE_FLAGS="-j8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-"
-else
-  DEST=""
-  MAKE_FLAGS="-j4"
+  MAKE_FLAGS?="-j4"
 fi
 
 #####################################################################
@@ -68,16 +49,14 @@ echo "COMPILING.."
 execute "cd linux"
 
 # Use default conf with RTL8723BS enabled
-execute "KERNEL=kernel7"
 execute "make $MAKE_FLAGS bcm2709_defconfig"
 execute "sed -i 's/# CONFIG_RTL8723BS is not set/CONFIG_RTL8723BS=m/' .config"
+# execute "sed -i 's/# CONFIG_RFKILL_GPIO is not set/CONFIG_RFKILL_GPIO=m/' .config"
+#execute "sed -i 's/# CONFIG_BT_HCIUART_RTL is not set/CONFIG_BT_HCIUART_RTL=y/' .config"
 
-# fixes for Retropie 4.8, kernel 5.10.103 (stable)
-execute "sed -i 's/CONFIG_KEYBOARD_TCA6416=m/# CONFIG_KEYBOARD_TCA6416 is not set/' .config"
-execute "sed -i 's/CONFIG_KEYBOARD_TCA8418=m/# CONFIG_KEYBOARD_TCA8418 is not set/' .config"
-execute "sed -i 's/CONFIG_LEDS_PWM=y/# CONFIG_LEDS_PWM is not set/' .config"
-execute "sed -i 's/CONFIG_LEDS_TRIGGER_PATTERN=m/# CONFIG_LEDS_TRIGGER_PATTERN is not set/' .config"
-execute "sed -i 's/CONFIG_F2FS_FS_SECURITY=y/# CONFIG_F2FS_FS_SECURITY is not set/' .config"
+# Use previous .config file 
+# execute "cp ../config.template .config"
+# execute "make $MAKE_FLAGS oldconfig"
 
 # (Optionally) Either edit the .config IMG by hand or use menuconfig:
 # make $MAKE_FLAGS menuconfig
@@ -86,19 +65,19 @@ execute "sed -i 's/CONFIG_F2FS_FS_SECURITY=y/# CONFIG_F2FS_FS_SECURITY is not se
 execute "make $MAKE_FLAGS zImage modules dtbs"
 
 execute "mkdir ../modules"
-execute "make INSTALL_MOD_PATH=../modules/ modules_install"
+execute "sudo make INSTALL_MOD_PATH=../modules/ modules_install"
 
 execute "rm -f ../modules/lib/modules/*/build"
 execute "rm -f ../modules/lib/modules/*/source"
-execute "rsync -avh --delete ../modules/lib/modules/* $DEST/lib/modules/"
 
-execute "cp $DESTBOOT/$KERNEL.img $DESTBOOT/$KERNEL-backup.img"
-execute "cp arch/arm/boot/dts/*.dtb $DESTBOOT/"
-execute "rm $DESTBOOT/overlays/*"
-execute "cp arch/arm/boot/dts/overlays/*.dtb* $DESTBOOT/overlays/"
-execute "cp arch/arm/boot/dts/overlays/README $DESTBOOT/overlays/"
-execute "cp arch/arm/boot/zImage $DESTBOOT/$KERNEL.img"
+execute "mkdir -p ../pi/overlays"
+
+execute "cp .config ../config"
+execute "cp arch/arm/boot/dts/*.dtb ../pi/"
+execute "cp arch/arm/boot/dts/overlays/*.dtb* ../pi/overlays/"
+execute "cp arch/arm/boot/dts/overlays/README ../pi/overlays/"
+execute "cp arch/arm/boot/zImage ../pi/"
 
 #####################################################################
 # DONE
-echo "DONE!"
+echo "COMPILATION DONE!"

@@ -113,8 +113,8 @@ execute "resize2fs /dev/mapper/loop0p2"
 execute "sudo mount /dev/mapper/loop0p1 $MOUNTFAT32"
 execute "sudo mount /dev/mapper/loop0p2 $MOUNTEXT4"
 
-# Compile
-execute "./cross-compile-kernel.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4"
+# Install built kernel (assumes compile-kernel.sh ran before)
+execute "./install-kernel.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4"
 
 # Unmount partitions
 execute "umount $MOUNTFAT32"
