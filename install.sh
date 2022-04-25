@@ -51,6 +51,7 @@ PIHOMEDIR="$DEST/home/pi"
 BINDIR="$PIHOMEDIR/$GITHUBPROJECT"
 # USER="pi"
 USER=1000
+POSTINSTALL="/usr/local/sbin/post-install.sh"
 
 if [[ $2 != "" ]] ; then
   BRANCH=$2
@@ -91,7 +92,25 @@ install() { #STRING
     # execute "dpkg -x $BINDIR/$1 $DEST/"
     #
     # Instead we install in a chroot which only works on ARM based hosts, e.g. Macbook M1 or RaspberryPi
-    execute "chroot $DEST sudo dpkg -i /home/pi/$GITHUBPROJECT/$1"
+    execute "sudo chroot $DEST dpkg -i /home/pi/$GITHUBPROJECT/$1"
+  else
+    execute "sudo dpkg -i $BINDIR/$1"
+  fi
+}
+
+post-install() { #STRING
+  if [ $# != 1 ] ; then
+    echo "ERROR: No args passed"
+    exit 1
+  fi
+
+  if [[ $DEST != "" ]] ; then
+    if ! exists $DEST/$POSTINSTALL ; then
+      echo "#!/bin/bash" > $DEST/$POSTINSTALL
+      echo "set -e" >> $DEST/$POSTINSTALL
+      chmod a+x $DEST/$POSTINSTALL
+    fi
+    echo "dpkg -i /home/pi/$GITHUBPROJECT/$1" >> $DEST/$POSTINSTALL
   else
     execute "sudo dpkg -i $BINDIR/$1"
   fi
@@ -130,12 +149,12 @@ execute "chown -R $USER:$USER $BINDIR"
 # Config.txt bits
 if ! exists "$DESTBOOT/config_ORIGINAL.txt" ; then
   execute "cp $DESTBOOT/config.txt $DESTBOOT/config_ORIGINAL.txt"
-  execute "cp $BINDIR/boot/* $DESTBOOT/"
+  execute "cp $BINDIR/settings/boot/* $DESTBOOT/"
 fi
 
 # Special case where config.txt has been updated on upgrade
 if [[ ! $(grep "CS CONFIG VERSION: 1.0" "$DESTBOOT/config.txt") ]] ; then
-  execute "cp $BINDIR/settings/config.txt $DESTBOOT/config.txt"
+  execute "cp $BINDIR/settings/boot/config.txt $DESTBOOT/config.txt"
 fi
 
 #####################################################################
@@ -255,11 +274,11 @@ install "settings/deb/avrdude_6.3-20171130+svn1429-2+rpt1_armhf.deb"
 install "settings/deb/libapr1_1.6.5-1_armhf.deb"
 install "settings/deb/libaprutil1_1.6.1-4_armhf.deb"
 install "settings/deb/libserf-1-1_1.3.9-7_armhf.deb"
-install "settings/deb/libsvn1_1.10.4-1+deb10u3_armhf.deb"
 install "settings/deb/libutf8proc2_2.3.0-1_armhf.deb"
+install "settings/deb/libsvn1_1.10.4-1+deb10u3_armhf.deb"
 install "settings/deb/subversion_1.10.4-1+deb10u3_armhf.deb"
-install "sound-module/snd-usb-audio-dkms_0.1_armhf.deb"
-install "wifi-module/rtl8723bs-dkms_4.14_all.deb"
+post-install "sound-module/snd-usb-audio-dkms_0.1_armhf.deb"
+post-install "wifi-module/rtl8723bs-dkms_4.14_all.deb"
 
 # Install wiringPi
 install "settings/deb/wiringpi_2.46_armhf.deb"
@@ -308,6 +327,10 @@ execute "cp $BINDIR/dpi-cloner/dpi-cloner.service $SYSTEMD/dpi-cloner.service"
 if [[ $DEST == "" ]] ; then
   execute "systemctl daemon-reload"
   execute "systemctl start cs-hud.service"
+fi
+
+if exists $DEST/$POSTINSTALL ; then
+  echo "rm $POSTINSTALL" >> $DEST/$POSTINSTALL
 fi
 
 #####################################################################

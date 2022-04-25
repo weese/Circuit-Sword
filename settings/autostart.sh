@@ -23,6 +23,13 @@
 # Restart to hdmi on boot to fix any changes to file
 sudo /usr/bin/python /home/pi/Circuit-Sword/settings/reboot_to_hdmi.py --check
 
+# Post-install script
+POSTINSTALL="/usr/local/sbin/post-install.sh"
+if [ -x $POSTINSTALL ]; then
+  echo "Starting POSTINSTALL.."
+  sudo $POSTINSTALL &
+fi
+
 # Load config file and action
 CONFIGFILE="/boot/config-cs.txt"
 if [ -f $CONFIGFILE ]; then
