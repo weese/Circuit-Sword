@@ -27,7 +27,10 @@ sudo /usr/bin/python /home/pi/Circuit-Sword/settings/reboot_to_hdmi.py --check
 POSTINSTALL="/usr/local/sbin/post-install.sh"
 if [ -x $POSTINSTALL ]; then
   echo "Starting POSTINSTALL.."
-  sudo $POSTINSTALL &
+  sudo $POSTINSTALL
+  if [ $? -eq 0 ] ; then
+    sudo rm $POSTINSTALL
+  fi
 fi
 
 # Load config file and action

@@ -80,6 +80,24 @@ execute() { #STRING
   return 0
 }
 
+post-execute() { #STRING
+  if [ $# != 1 ] ; then
+    echo "ERROR: No args passed"
+    exit 1
+  fi
+
+  if [[ $DEST != "" ]] ; then
+    if ! exists $DEST/$POSTINSTALL ; then
+      echo "#!/bin/bash" > $DEST/$POSTINSTALL
+      echo "set -e" >> $DEST/$POSTINSTALL
+      chmod a+x $DEST/$POSTINSTALL
+    fi
+    echo "$1" >> $DEST/$POSTINSTALL
+  else
+    execute "$1"
+  fi
+}
+
 install() { #STRING
   if [ $# != 1 ] ; then
     echo "ERROR: No args passed"
@@ -277,8 +295,14 @@ install "settings/deb/libserf-1-1_1.3.9-7_armhf.deb"
 install "settings/deb/libutf8proc2_2.3.0-1_armhf.deb"
 install "settings/deb/libsvn1_1.10.4-1+deb10u3_armhf.deb"
 install "settings/deb/subversion_1.10.4-1+deb10u3_armhf.deb"
-post-install "sound-module/snd-usb-audio-dkms_0.1_armhf.deb"
-post-install "wifi-module/rtl8723bs-dkms_4.14_all.deb"
+
+# Installing the deb modules means to compile for all installed kernels, which takes ages, so we only add the DKMS modules
+# post-install "sound-module/snd-usb-audio-dkms_0.1_armhf.deb"
+# post-install "wifi-module/rtl8723bs-dkms_4.14_all.deb"
+execute "dpkg -x $BINDIR/sound-module/snd-usb-audio-dkms_0.1_armhf.deb $DEST"
+execute "dpkg -x $BINDIR/wifi-module/rtl8723bs-dkms_4.14_all.deb $DEST"
+post-execute "dkms add -m snd-usb-audio -v 0.1"
+post-execute "dkms add -m rtl8723bs -v 4.14"
 
 # Install wiringPi
 install "settings/deb/wiringpi_2.46_armhf.deb"
@@ -327,10 +351,6 @@ execute "cp $BINDIR/dpi-cloner/dpi-cloner.service $SYSTEMD/dpi-cloner.service"
 if [[ $DEST == "" ]] ; then
   execute "systemctl daemon-reload"
   execute "systemctl start cs-hud.service"
-fi
-
-if exists $DEST/$POSTINSTALL ; then
-  echo "rm $POSTINSTALL" >> $DEST/$POSTINSTALL
 fi
 
 #####################################################################

@@ -51,6 +51,8 @@ execute "cd linux"
 # Use default conf with RTL8723BS enabled
 execute "make $MAKE_FLAGS bcm2709_defconfig"
 execute "sed -i 's/# CONFIG_RTL8723BS is not set/CONFIG_RTL8723BS=m/' .config"
+# We rename the kernel, as it otherwise collides with kernel updates installed by the user
+execute "sed -i 's/CONFIG_LOCALVERSION=\"-v7\"/CONFIG_LOCALVERSION=\"-v7-volume-fix\"/' .config"
 # execute "sed -i 's/# CONFIG_RFKILL_GPIO is not set/CONFIG_RFKILL_GPIO=m/' .config"
 #execute "sed -i 's/# CONFIG_BT_HCIUART_RTL is not set/CONFIG_BT_HCIUART_RTL=y/' .config"
 
