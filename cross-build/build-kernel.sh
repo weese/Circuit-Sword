@@ -19,6 +19,7 @@ fi
 
 MOUNTFAT32="/mnt/fat32"
 MOUNTEXT4="/mnt/ext4"
+KERNEL=${KERNEL:-'kernel7'}
 
 #####################################################################
 # Functions
@@ -114,7 +115,7 @@ execute "sudo mount /dev/mapper/loop0p1 $MOUNTFAT32"
 execute "sudo mount /dev/mapper/loop0p2 $MOUNTEXT4"
 
 # Install built kernel (assumes compile-kernel.sh ran before)
-execute "./install-kernel.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4"
+execute "KERNEL=${KERNEL} ./install-kernel.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4"
 
 # Unmount partitions
 execute "umount $MOUNTFAT32"

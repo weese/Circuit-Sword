@@ -25,8 +25,8 @@ if [ "$EUID" -ne 0 ]
   exit 1
 fi
 
-if [ $# -lt 1 ] || [ $# -gt 4 ]; then
-  echo "Usage: ./<cmd> YES [branch] [fat32 root] [ext4 root]"
+if [ $# -lt 1 ] || [ $# -gt 5 ]; then
+  echo "Usage: ./<cmd> YES [branch] [fat32 root] [ext4 root] [board]"
   exit 1
 fi
 
@@ -43,6 +43,12 @@ if [[ $4 != "" ]] ; then
   DEST=$4
 else
   DEST=""
+fi
+
+if [[ $5 != "" ]] ; then
+  BOARD=$5
+else
+  BOARD="cs"
 fi
 
 GITHUBPROJECT="Circuit-Sword"
@@ -167,12 +173,12 @@ execute "chown -R $USER:$USER $BINDIR"
 # Config.txt bits
 if ! exists "$DESTBOOT/config_ORIGINAL.txt" ; then
   execute "cp $DESTBOOT/config.txt $DESTBOOT/config_ORIGINAL.txt"
-  execute "cp $BINDIR/settings/boot/* $DESTBOOT/"
+  execute "cp $BINDIR/settings/boot-$BOARD/* $DESTBOOT/"
 fi
 
 # Special case where config.txt has been updated on upgrade
 if [[ ! $(grep "CS CONFIG VERSION: 1.0" "$DESTBOOT/config.txt") ]] ; then
-  execute "cp $BINDIR/settings/boot/config.txt $DESTBOOT/config.txt"
+  execute "cp $BINDIR/settings/boot-$BOARD/config.txt $DESTBOOT/config.txt"
 fi
 
 #####################################################################
@@ -187,7 +193,7 @@ if ! exists "$DEST/opt/retropie/configs/all/autostart_ORIGINAL.sh" ; then
   execute "mv $DEST/opt/retropie/configs/all/autostart.sh $DEST/opt/retropie/configs/all/autostart_ORIGINAL.sh"
   execute "cp $BINDIR/settings/splashscreen.list $DEST/etc/splashscreen.list"
 fi
-execute "cp $BINDIR/settings/autostart.sh $DEST/opt/retropie/configs/all/autostart.sh"
+execute "cp $BINDIR/settings/autostart-$BOARD.sh $DEST/opt/retropie/configs/all/autostart.sh"
 execute "chown $USER:$USER $DEST/opt/retropie/configs/all/autostart.sh"
 
 # Copy ES safe shutdown script
@@ -288,7 +294,7 @@ install "settings/deb/libftdi1_0.20-4_armhf.deb"
 install "settings/deb/libhidapi-libusb0_0.8.0~rc1+git20140818.d17db57+dfsg-2_armhf.deb"
 install "settings/deb/avrdude_6.3-20171130+svn1429-2+rpt1_armhf.deb"
 
-# Install DKMS modules
+# Install DKMS dependencies
 install "settings/deb/libapr1_1.6.5-1_armhf.deb"
 install "settings/deb/libaprutil1_1.6.1-4_armhf.deb"
 install "settings/deb/libserf-1-1_1.3.9-7_armhf.deb"
@@ -318,28 +324,33 @@ else
   SYSTEMD="$DEST/lib/systemd/system"
 fi
 
-# Remove the old service
-execute "rm -f $DEST/etc/systemd/system/cs-osd.service"
-execute "rm -f $DEST/etc/systemd/system/multi-user.target.wants/cs-osd.service"
-execute "rm -f $SYSTEMD/cs-osd.service"
+if [ "$BOARD" == "cs" ]; then
+  # Remove the old service
+  execute "rm -f $DEST/etc/systemd/system/cs-osd.service"
+  execute "rm -f $DEST/etc/systemd/system/multi-user.target.wants/cs-osd.service"
+  execute "rm -f $SYSTEMD/cs-osd.service"
+
+  # Install HUD service
+  HUD=cs-osd
+  execute "cp $BINDIR/hud/cs/cs-hud.service $SYSTEMD/$HUD.service"
+else
+  # Install OSD service
+  HUD=saio-osd
+  # execute "cp $BINDIR/hud/saio/saio-osd.service $SYSTEMD/$HUD.service"
+  install "settings/deb/libpng12-0_1.2.54-6_armhf.deb"
+fi
 
 # Prepare for service install
-execute "rm -f $DEST/etc/systemd/system/cs-hud.service"
-execute "rm -f $DEST/etc/systemd/system/multi-user.target.wants/cs-hud.service"
-execute "rm -f $SYSTEMD/cs-hud.service"
-
-execute "rm -f $SYSTEMD/dpi-cloner.service"
-
-# Install HUD service
-execute "cp $BINDIR/cs-hud/cs-hud.service $SYSTEMD/cs-hud.service"
+execute "rm -f $DEST/etc/systemd/system/$HUD.service"
+execute "rm -f $DEST/etc/systemd/system/multi-user.target.wants/$HUD.service"
 
 # Install RTL Bluetooth service
 execute "cp $BINDIR/bt-driver/rtl-bluetooth.service $DEST/lib/systemd/system/rtl-bluetooth.service"
 execute "cp $BINDIR/bt-driver/rtk_hciattach $DEST/usr/bin/rtk_hciattach"
 
 #execute "systemctl enable cs-hud.service"
-execute "ln -s $SYSTEMD/cs-hud.service $DEST/etc/systemd/system/cs-hud.service"
-execute "ln -s $SYSTEMD/cs-hud.service $DEST/etc/systemd/system/multi-user.target.wants/cs-hud.service"
+execute "ln -s $SYSTEMD/$HUD.service $DEST/etc/systemd/system/$HUD.service"
+execute "ln -s $SYSTEMD/$HUD.service $DEST/etc/systemd/system/multi-user.target.wants/$HUD.service"
 
 #execute "systemctl enable rtl-bluetooth.service"
 execute "ln -s $DEST/lib/systemd/system/rtl-bluetooth.service $DEST/etc/systemd/system/rtl-bluetooth.service"
@@ -350,7 +361,7 @@ execute "cp $BINDIR/dpi-cloner/dpi-cloner.service $SYSTEMD/dpi-cloner.service"
 
 if [[ $DEST == "" ]] ; then
   execute "systemctl daemon-reload"
-  execute "systemctl start cs-hud.service"
+  execute "systemctl start $HUD.service"
 fi
 
 #####################################################################

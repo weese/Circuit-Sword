@@ -29,7 +29,7 @@ import time
 import datetime
 import os.path
 
-bindir = "/home/pi/Circuit-Sword/cs-tester/"
+bindir = "/home/pi/Circuit-Sword/tester/"
 
 # Hardware variables
 pi_shdn = 37

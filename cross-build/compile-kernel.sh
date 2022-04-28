@@ -3,6 +3,13 @@
 set -e
 
 if [[ $1 != "" ]] ; then
+  TARGET="$1"
+  shift
+else
+  TARGET="cm3"
+fi
+
+if [[ $1 != "" ]] ; then
   MAKE_FLAGS="$@"
 else
   MAKE_FLAGS?="-j4"
@@ -49,7 +56,11 @@ echo "COMPILING.."
 execute "cd linux"
 
 # Use default conf with RTL8723BS enabled
-execute "make $MAKE_FLAGS bcm2709_defconfig"
+if [ "${TARGET}" == "cm3" ] ; then
+  execute "make $MAKE_FLAGS bcm2709_defconfig"
+else
+  execute "make $MAKE_FLAGS bcmrpi_defconfig"
+fi
 execute "sed -i 's/# CONFIG_RTL8723BS is not set/CONFIG_RTL8723BS=m/' .config"
 # We rename the kernel, as it otherwise collides with kernel updates installed by the user
 execute "sed -i 's/CONFIG_LOCALVERSION=\"-v7\"/CONFIG_LOCALVERSION=\"-v7-volume-fix\"/' .config"

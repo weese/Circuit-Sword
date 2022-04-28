@@ -1,0 +1,9 @@
+[Unit]
+Description=Super-AIO HUD/OSD Service
+ 
+[Service]
+ExecStart=/home/pi/Circuit-Sword/hud/saio/saio-osd.py
+ 
+[Install]
+WantedBy=multi-user.target
+Alias=saio-osd.service

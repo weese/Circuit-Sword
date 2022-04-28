@@ -25,8 +25,8 @@ if [ "$EUID" -ne 0 ]
   exit 1
 fi
 
-if [ $# != 2 ] && [ $# != 3 ] ; then
-  echo "Usage: ./<cmd> YES <image.img> [branch]"
+if [ $# -lt 2 ] || [ $# -gt 4 ]; then
+  echo "Usage: ./<cmd> YES <image.img> [board] [branch]"
   exit 1
 fi
 
@@ -38,12 +38,23 @@ if [[ $2 != "" ]] ; then
 fi
 
 if [[ $3 != "" ]] ; then
-  BRANCH=$3
+  BOARD=$3
+else
+  BOARD="cs"
+fi
+
+if [[ $4 != "" ]] ; then
+  BRANCH=$4
 else
   BRANCH="master"
 fi
 
-BUILD="CSO_CM3_"$(date +"%Y%m%d-%H%M%S")
+if [ $BOARD == "cs" ]; then
+  BUILD="CSO_CM3_"$(date +"%Y%m%d-%H%M%S")
+else
+  BUILD="SAIO_"$(date +"%Y%m%d-%H%M%S")
+fi
+
 GITHUBPROJECT="Circuit-Sword"
 GITHUBURL="https://github.com/weese/$GITHUBPROJECT"
 PIHOMEDIR="/home/pi"
@@ -136,8 +147,13 @@ execute "kpartx -a -v -s $OUTFILE"
 execute "sudo mount /dev/mapper/loop0p1 $MOUNTFAT32"
 execute "sudo mount /dev/mapper/loop0p2 $MOUNTEXT4"
 
+# If mounted, copy current Circuit-Sword repo instead of cloning master
+if [ -d /cs ]; then
+  execute "cp -a /cs $MOUNTEXT4$BINDIR"
+fi
+
 # Install
-execute "../install.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4"
+execute "../install.sh YES $BRANCH $MOUNTFAT32 $MOUNTEXT4 $BOARD"
 
 # Patch for PLUS 
 # Not needed for Debian buster

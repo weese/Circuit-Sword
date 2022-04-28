@@ -24,7 +24,8 @@ if [[ $3 != "" ]] ; then
 else
   DEST=""
 fi
-KERNEL=kernel7
+
+KERNEL=${KERNEL:-'kernel7'}
 
 #####################################################################
 # Functions

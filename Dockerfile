@@ -20,6 +20,7 @@ CMD ["bash"]
 
 # Cross compile kernel
 FROM base AS build-kernel
+ARG TARGET
 ARG BRANCH
 VOLUME /build/images
 
@@ -35,7 +36,7 @@ COPY cross-build/build-kernel.sh .
 COPY cross-build/compile-kernel.sh .
 COPY cross-build/install-kernel.sh .
 RUN --mount=type=cache,target=/usr/src/linux/ \
-  ./compile-kernel.sh -j8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+  ./compile-kernel.sh $TARGET -j8 ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 
 CMD ["bash"]
 
@@ -46,5 +47,6 @@ VOLUME /build/images
 
 COPY build/build-image.sh .
 COPY install.sh /
+COPY . /cs
 
 CMD ["bash"]
