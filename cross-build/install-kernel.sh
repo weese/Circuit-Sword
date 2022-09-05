@@ -56,9 +56,13 @@ execute "cd linux"
 execute "cp ../config /build/images/"
 
 execute "cp $DESTBOOT/$KERNEL.img $DESTBOOT/$KERNEL-backup.img"
+if [[ "$KERNEL" == "kernel8" ]] ; then
+execute "cp ../pi/Image.gz $DESTBOOT/$KERNEL.img"
+else
 execute "cp ../pi/zImage $DESTBOOT/$KERNEL.img"
-execute "cp ../pi/*.dtb $DESTBOOT/"
+fi
 # execute "rm $DESTBOOT/overlays/*"
+execute "cp ../pi/*.dtb $DESTBOOT/"
 execute "cp ../pi/overlays/*.dtb* $DESTBOOT/overlays/"
 execute "cp ../pi/overlays/README $DESTBOOT/overlays/"
 

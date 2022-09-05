@@ -56,7 +56,9 @@ echo "COMPILING.."
 execute "cd linux"
 
 # Use default conf with RTL8723BS enabled
-if [ "${TARGET}" == "cm3" ] ; then
+if [ "${TARGET}" == "cm3-64" ] ; then
+  execute "make $MAKE_FLAGS bcm2711_defconfig"
+elif [ "${TARGET}" == "cm3" ] ; then
   execute "make $MAKE_FLAGS bcm2709_defconfig"
 else
   execute "make $MAKE_FLAGS bcmrpi_defconfig"
@@ -75,8 +77,11 @@ execute "sed -i 's/CONFIG_LOCALVERSION=\"-v7\"/CONFIG_LOCALVERSION=\"-v7-volume-
 # make $MAKE_FLAGS menuconfig
 
 # (Cross-)compile kernel
+if [[ "${TARGET}" == *-64 ]] ; then
+execute "make $MAKE_FLAGS Image.gz modules dtbs"
+else
 execute "make $MAKE_FLAGS zImage modules dtbs"
-
+fi
 execute "mkdir ../modules"
 execute "sudo make INSTALL_MOD_PATH=../modules/ modules_install"
 
@@ -85,11 +90,19 @@ execute "rm -f ../modules/lib/modules/*/source"
 
 execute "mkdir -p ../pi/overlays"
 
+if [[ "${TARGET}" == *-64 ]] ; then
+execute "cp .config ../config"
+execute "cp arch/arm64/boot/dts/broadcom/*.dtb ../pi/"
+execute "cp arch/arm64/boot/dts/overlays/*.dtb* ../pi/overlays/"
+execute "cp arch/arm64/boot/dts/overlays/README ../pi/overlays/"
+execute "cp arch/arm64/boot/Image.gz ../pi/"
+else
 execute "cp .config ../config"
 execute "cp arch/arm/boot/dts/*.dtb ../pi/"
 execute "cp arch/arm/boot/dts/overlays/*.dtb* ../pi/overlays/"
 execute "cp arch/arm/boot/dts/overlays/README ../pi/overlays/"
 execute "cp arch/arm/boot/zImage ../pi/"
+fi
 
 #####################################################################
 # DONE

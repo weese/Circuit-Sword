@@ -49,7 +49,7 @@ else
   BRANCH="master"
 fi
 
-if [ $BOARD == "cs" ]; then
+if [[ $BOARD == cs* ]]; then
   BUILD="CSO_CM3_"$(date +"%Y%m%d-%H%M%S")
 else
   BUILD="SAIO_"$(date +"%Y%m%d-%H%M%S")

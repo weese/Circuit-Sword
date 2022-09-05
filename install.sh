@@ -324,7 +324,7 @@ else
   SYSTEMD="$DEST/lib/systemd/system"
 fi
 
-if [ "$BOARD" == "cs" ]; then
+if [[ "$BOARD" == cs* ]]; then
   # Remove the old service
   execute "rm -f $DEST/etc/systemd/system/cs-osd.service"
   execute "rm -f $DEST/etc/systemd/system/multi-user.target.wants/cs-osd.service"

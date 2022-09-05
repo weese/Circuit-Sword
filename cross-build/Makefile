@@ -1,16 +1,20 @@
-BOARD?=cs
+BOARD?=cs-64
+DOCKERFILE=../Dockerfile
 
-ifeq ($(BOARD),"cs")
+ifeq ($(BOARD),cs-64)
+# Latest
+TARGET=cm3-64
+IMG=retropie-buster-4.8-rpi2_3_zero2w
+IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/${IMG}.img.gz
+BRANCH=rpi-5.15.y
+KERNEL=kernel8
+DOCKERFILE=../Dockerfile.64
+else ifeq ($(BOARD),cs)
 # Latest
 TARGET=cm3
 IMG=retropie-buster-4.8-rpi2_3_zero2w
 IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.8/${IMG}.img.gz
 BRANCH=rpi-5.15.y
-
-# Anthology's distro
-# IMG=retropie-buster-4.7.1-rpi2_3
-# IMG_URL=https://github.com/RetroPie/RetroPie-Setup/releases/download/4.7.1/${IMG}.img.gz
-# BRANCH=stable
 KERNEL=kernel7
 else
 # Latest SAIO ()
@@ -32,7 +36,9 @@ docker-build db: docker-build-kernel docker-build-image
 .PHONY: docker-build-kernel
 docker-build-kernel dbk:
 	DOCKER_BUILDKIT=1 \
-		docker build --progress=plain \
+		docker build \
+		--file ${DOCKERFILE} \
+		--progress=plain \
 		--build-arg TARGET=${TARGET} \
 		--build-arg BRANCH=${BRANCH} \
 		--target build-kernel \
@@ -42,7 +48,9 @@ docker-build-kernel dbk:
 .PHONY: docker-build-image
 docker-build-image dbi:
 	DOCKER_BUILDKIT=1 \
-		docker build --progress=plain \
+		docker build \
+		--file ${DOCKERFILE} \
+		--progress=plain \
 		--target build-image \
 		-t build-image \
 		..
